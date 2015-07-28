@@ -28,11 +28,11 @@ rule hex
   description = generating hex $out
 
 rule flash
-  command = avrdude -c usbasp -p atmega328p -U flash:w:$in
+  command = avrdude -c usbasp -p $mcu -U flash:w:$in
   description = flashing $in
 
 rule size
-  command = avr-size -C --mcu=atmega328p $in
+  command = avr-size -C --mcu=$mcu $in
 
 build $builddir/main.o: c $sourcedir/main.c
 
