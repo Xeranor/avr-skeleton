@@ -1,24 +1,34 @@
+# Defaults
 mcu = atmega328p
+programmer = usbasp
 baud = 9600
 cpu_clock = 8000000UL
 target = build
 
+
+# Fuse settings
+l_fuse = 0xE2
+h_fuse = 0xD9
+e_fuse = 0xFF
+
+# Directorys
 builddir = build
 sourcedir = src
 headerdir = include
 lib_header = /home/jonas/Projekte/librarys/include
 lib_source = /home/jonas/Projekte/librarys/src
+
+# Compiler flags
 cc = avr-gcc
-
-
 cpflags = -DF_CPU=$cpu_clock -DBAUD=$baud -mmcu=$mcu -I$headerdir -I$lib_header
 cflags = -Os -g -std=gnu99 -Wall -ffunction-sections
+avrdude_flags = -c $programmer -p $mcu
+ldflags = -Wl,-Map,$builddir/$target.map -Wl,--gc-sections -mmcu=$mcu
 
 rule c
   command = $cc $cflags $cpflags -c $in -o $out
   description = c $out
 
-ldflags = -Wl,-Map,$builddir/$target.map -Wl,--gc-sections -mmcu=$mcu
 rule link
   command = $cc $ldflags -o $out $in $libs
   description = linking $out
@@ -28,11 +38,14 @@ rule hex
   description = generating hex $out
 
 rule flash
-  command = avrdude -c usbasp -p $mcu -U flash:w:$in
+  command = avrdude $avrdude_flags -U flash:w:$in
   description = flashing $in
 
 rule size
   command = avr-size -C --mcu=$mcu $in
+
+rule fuse
+  command = avrdude $avrdude_flags -U lfuse:w:$l_fuse:m -U hfuse:w:$h_fuse:m -U efuse:w:$e_fuse:m
 
 build $builddir/main.o: c $sourcedir/main.c
 
@@ -41,6 +54,7 @@ build $builddir/$target.elf: link $builddir/main.o
 build $builddir/$target.hex: hex $builddir/$target.elf
 build program: flash $builddir/$target.hex
 build size: size $builddir/$target.elf
+build fuse: fuse
 
 default program
 
