@@ -12,7 +12,7 @@ cc = avr-gcc
 
 
 cpflags = -DF_CPU=$cpu_clock -DBAUD=$baud -mmcu=$mcu -I$headerdir -I$lib_header
-cflags = -Os -g -std=gnu99 -Wall
+cflags = -Os -g -std=gnu99 -Wall -ffunction-sections
 
 rule c
   command = $cc $cflags $cpflags -c $in -o $out
